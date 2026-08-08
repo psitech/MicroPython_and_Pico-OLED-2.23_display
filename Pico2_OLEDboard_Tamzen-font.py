@@ -4,12 +4,6 @@ from machine import Pin, SPI
 import framebuf
 import time
 
-DC = 8
-RST = 12
-MOSI = 11
-SCK = 10
-CS = 9
-
 # converted Tamzen8x15r.bdf
 Font_Tamzen8X15r = bytearray(
     b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' # space (32)
@@ -114,12 +108,12 @@ class SSD1305_SPI(framebuf.FrameBuffer):
         self.width = 128
         self.height = 32
         
-        self.cs = Pin(CS, Pin.OUT)
-        self.rst = Pin(RST, Pin.OUT)
+        self.cs = Pin(9, Pin.OUT)
+        self.rst = Pin(12, Pin.OUT)
         
         self.cs(1)
-        self.spi = SPI(1, 10000_000, polarity=0, phase=0, sck=Pin(SCK), mosi=Pin(MOSI), miso=None)
-        self.dc = Pin(DC, Pin.OUT)
+        self.spi = SPI(1, 10000_000, polarity=0, phase=0, sck=Pin(10), mosi=Pin(11), miso=None)
+        self.dc = Pin(8, Pin.OUT)
         self.dc(1)
         self.buffer = bytearray(self.height * self.width // 8)
         super().__init__(self.buffer, self.width, self.height, framebuf.MONO_VLSB)
@@ -178,12 +172,11 @@ class SSD1305_SPI(framebuf.FrameBuffer):
             self.blit(char_fbuf, current_x, start_y)
             current_x += 8
 
+# __main__
+oled = SSD1305_SPI()
+oled.fill(oled.black)
 
-if __name__ == '__main__':
-    oled = SSD1305_SPI()
-    oled.fill(oled.black)
+oled.draw_text('0123456789{}[]/\\', 0, 2)  # max 16 characters per line
+oled.draw_text('ABCDEFGHIJKLMNOP', 0, 17)
 
-    oled.draw_text('0123456789{}[]/\\', 0, 2)  # max 16 characters per line
-    oled.draw_text('ABCDEFGHIJKLMNOP', 0, 17)
-    
-    oled.show()
+oled.show()
